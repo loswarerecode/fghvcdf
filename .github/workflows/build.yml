@@ -35,32 +35,14 @@ jobs:
         run: |
           curl -fsSL "https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradlew" -o gradlew
           chmod +x gradlew
-          python3 -c "
-import urllib.request, zipfile, io, sys
-url = 'https://services.gradle.org/distributions/gradle-8.4-bin.zip'
-print('Downloading Gradle distribution...')
-data = urllib.request.urlopen(url).read()
-z = zipfile.ZipFile(io.BytesIO(data))
-for name in z.namelist():
-    if name.endswith('gradle-wrapper.jar'):
-        open('gradle/wrapper/gradle-wrapper.jar','wb').write(z.read(name))
-        print('Installed:', name)
-        sys.exit(0)
-sys.exit(1)
-"
+          curl -fsSL "https://services.gradle.org/distributions/gradle-8.4-bin.zip" -o /tmp/gradle.zip
+          unzip -p /tmp/gradle.zip "$(unzip -Z1 /tmp/gradle.zip | grep 'gradle-wrapper.jar')" > gradle/wrapper/gradle-wrapper.jar
+          echo "Wrapper jar size: $(wc -c < gradle/wrapper/gradle-wrapper.jar)"
 
       - name: Create debug keystore
         run: |
           mkdir -p ~/.android
-          keytool -genkeypair \
-            -keystore ~/.android/debug.keystore \
-            -alias androiddebugkey \
-            -keypass android \
-            -storepass android \
-            -dname "CN=Android Debug,O=Android,C=US" \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000
+          keytool -genkeypair -keystore ~/.android/debug.keystore -alias androiddebugkey -keypass android -storepass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
 
       - name: Cache Gradle
         uses: actions/cache@v4
@@ -81,3 +63,4 @@ sys.exit(1)
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+          
