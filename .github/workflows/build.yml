@@ -33,24 +33,21 @@ jobs:
 
       - name: Fix Gradle wrapper
         run: |
-          curl -fsSL \
-            "https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradlew" \
-            -o gradlew
+          curl -fsSL "https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradlew" -o gradlew
           chmod +x gradlew
-          python3 - <<'PYEOF'
+          python3 -c "
 import urllib.request, zipfile, io, sys
-url = "https://services.gradle.org/distributions/gradle-8.4-bin.zip"
-print("Downloading Gradle distribution...")
+url = 'https://services.gradle.org/distributions/gradle-8.4-bin.zip'
+print('Downloading Gradle distribution...')
 data = urllib.request.urlopen(url).read()
 z = zipfile.ZipFile(io.BytesIO(data))
 for name in z.namelist():
-    if name.endswith("gradle-wrapper.jar"):
-        with open("gradle/wrapper/gradle-wrapper.jar", "wb") as f:
-            f.write(z.read(name))
-        print("Installed:", name)
+    if name.endswith('gradle-wrapper.jar'):
+        open('gradle/wrapper/gradle-wrapper.jar','wb').write(z.read(name))
+        print('Installed:', name)
         sys.exit(0)
 sys.exit(1)
-PYEOF
+"
 
       - name: Create debug keystore
         run: |
